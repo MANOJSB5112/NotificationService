@@ -1,14 +1,14 @@
 package com.example.notificationservice.ExternalLibrary.SimpleMail;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import javax.mail.Authenticator;
 import javax.mail.PasswordAuthentication;
 import javax.mail.Session;
 import java.util.Properties;
 
-@Component
+@Service
 public class SimpleMailServiceImpl implements SimpleMailService{
     private SimpleMailUtil simpleMailUtil;
 
