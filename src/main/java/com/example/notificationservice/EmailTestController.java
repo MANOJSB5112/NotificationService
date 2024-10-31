@@ -25,8 +25,8 @@ public class EmailTestController {
     @PostMapping("/send")
     public ResponseEntity<String> sendEmail(@RequestBody SendEmailDto emailDto)
     {
-        String userName=emailDto.getUserName();
-        String to =emailDto.getTo();
+        String userName=emailDto.getName();
+        String to =emailDto.getEmail();
         String from= userSignUpFactory.getFromEmailAddress();
         String subject=userSignUpFactory.getSubjectForUser(userName);
         String body=userSignUpFactory.getEmailBodyForUser(userName);
