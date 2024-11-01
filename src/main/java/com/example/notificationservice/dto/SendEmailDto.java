@@ -8,4 +8,5 @@ import lombok.Setter;
 public class SendEmailDto {
     private String name;
     private String email;
+    private String roleName;
 }

@@ -7,9 +7,10 @@ import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.sqs.AmazonSQSAsync;
 import com.amazonaws.services.sqs.AmazonSQSAsyncClientBuilder;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.aws.messaging.config.QueueMessageHandlerFactory;
+import org.springframework.cloud.aws.messaging.core.QueueMessagingTemplate;
 import org.springframework.cloud.aws.messaging.listener.QueueMessageHandler;
 import org.springframework.cloud.aws.messaging.listener.SimpleMessageListenerContainer;
 import org.springframework.cloud.aws.messaging.support.NotificationMessageArgumentResolver;
@@ -28,37 +29,45 @@ import java.util.Collections;
 import java.util.List;
 
 @Configuration
-@RequiredArgsConstructor
 public class AwsSQSConfig {
-//    @Value("${cloud.aws.sqs.access-key}")
-    private String awsAccessKey="AKIA6ODU4XODLA3N5VPC";
 
-//    @Value("${cloud.aws.sqs.secret-key}")
-    private String awsSecretKey="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";
+    @Value("${sqs.access-key}")
+    private  String SQS_ACCESS_KEY;
 
-    @Value("${cloud.aws.sqs.region.static}")
-    private String awsRegion;
+    @Value("${sqs.secret-key}")
+    private String SQS_ACCESS_SECRET_KEY;
+
+    @Value("${sqs.region.static}")
+    private String SQS_REGION;
 
     private final ObjectMapper objectMapper;
 
-    AWSCredentialsProvider awsCredentialsProvider = new AWSStaticCredentialsProvider(
-            new BasicAWSCredentials(awsAccessKey, awsSecretKey)
-    );
-////
-////
-////    @Bean
-////    public QueueMessagingTemplate queueMessagingTemplate() {
-////        return new QueueMessagingTemplate(amazonSQSAsync());
-////    }
-////
-   @Bean
-   @Primary
+    @Autowired
+    public AwsSQSConfig(ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper;
+    }
+    @Bean
+    public AWSCredentialsProvider awsCredentialsProvider() {
+        return new AWSStaticCredentialsProvider(
+                new BasicAWSCredentials(SQS_ACCESS_KEY, SQS_ACCESS_SECRET_KEY)
+        );
+    }
+
+
+    @Bean
+    public QueueMessagingTemplate queueMessagingTemplate() {
+        return new QueueMessagingTemplate(amazonSQSAsync());
+    }
+
+    @Bean
+    @Primary
     public AmazonSQSAsync amazonSQSAsync() {
         return AmazonSQSAsyncClientBuilder.standard()
-                .withRegion(awsRegion)
-                .withCredentials(awsCredentialsProvider)
+                .withRegion(SQS_REGION)
+                .withCredentials(awsCredentialsProvider())
                 .build();
     }
+
     @Bean
     @Primary
     public QueueMessageHandler queueMessageHandler() {
@@ -68,12 +77,6 @@ public class AwsSQSConfig {
         MappingJackson2MessageConverter messageConverter = new MappingJackson2MessageConverter();
         messageConverter.setSerializedPayloadClass(String.class);
         messageConverter.setObjectMapper(objectMapper);
-
-        /*
-         * https://cloud.spring.io/spring-cloud-aws/spring-cloud-aws.html
-         * Because AWS messages does not contain the mime-type header, the Jackson message converter has to be configured
-         * with the strictContentTypeMatch property false to also parse message without the proper mime type.
-         */
         messageConverter.setStrictContentTypeMatch(false);
 
         List<MessageConverter> messageConverterList = new ArrayList<>();
@@ -82,13 +85,12 @@ public class AwsSQSConfig {
         messageConverterList.add(new SimpleMessageConverter());
 
         CompositeMessageConverter compositeMessageConverter = new CompositeMessageConverter(messageConverterList);
-
         queueMessageHandlerFactory.setArgumentResolvers(Collections.singletonList(new NotificationMessageArgumentResolver(compositeMessageConverter)));
-        QueueMessageHandler queueMessageHandler = queueMessageHandlerFactory.createQueueMessageHandler();
-        return queueMessageHandler;
+
+        return queueMessageHandlerFactory.createQueueMessageHandler();
     }
 
-
+    @Bean
     public ThreadPoolTaskExecutor threadPoolTaskExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setCorePoolSize(10);

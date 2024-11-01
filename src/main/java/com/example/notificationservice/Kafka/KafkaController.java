@@ -22,12 +22,13 @@ public class KafkaController {
 
 //    @KafkaListener(topics= "user-signup-event", groupId = "notificationService")
 //    public void handleNewUserSignUpEvent(String message) throws JsonProcessingException {
-//        SendEmailDto emailDto=objectMapper.readValue(message,SendEmailDto.class);
-//        String userName=emailDto.getUserName();
-//        String to =emailDto.getTo();
+//        NewUserExternalDto newUserExternalDto=objectMapper.readValue(message, NewUserExternalDto.class);
+//        String userName=newUserExternalDto.getName();
+//        String to =newUserExternalDto.getEmail();
+//        String roleName=newUserExternalDto.getRoleName();
 //        String from= userSignUpFactory.getFromEmailAddress();
-//        String subject=userSignUpFactory.getSubjectForUser(userName);
-//        String body=userSignUpFactory.getEmailBodyForUser(userName);
+//        String subject=userSignUpFactory.getSubjectForUser(userName,roleName);
+//        String body=userSignUpFactory.getEmailBodyForUser(userName,roleName);
 //        emailProcessor.sendEmail(to,from,subject,body);
 //    }
 }
